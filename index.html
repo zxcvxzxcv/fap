@@ -535,7 +535,7 @@ async function sbDeleteWhere(table, col, val) {
 //  STATE
 // ═══════════════════════════════
 let items = [], groups = [], logs = [];
-let editId = null, currentImg = null, currentCat = "전체";
+let editId = null, currentImg = null, currentImgFile = null, currentCat = "전체";
 
 const DAYS    = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const DAYS_KR = ["월","화","수","목","금","토","일"];
@@ -702,17 +702,28 @@ async function saveItem() {
   const note = document.getElementById("f-note").value.trim();
   if(!name){showToast("이름을 입력하세요");return;}
 
-  setSyncStatus("syncing","SAVING...");
+  setSyncStatus("syncing","UPLOADING...");
   try {
     if(editId) {
-      const data = { name, cat, gid, note, img: currentImg!==null ? currentImg : items.find(i=>i.id===editId)?.img };
+      let imgUrl = items.find(i=>i.id===editId)?.img || null;
+      // 새 이미지 파일이 있으면 Storage에 업로드
+      if(currentImgFile) {
+        imgUrl = await uploadImageToStorage(currentImgFile, editId);
+      }
+      const data = { name, cat, gid, note, img: imgUrl };
       await sbUpdate("star_items", editId, data);
       const idx = items.findIndex(i=>i.id===editId);
       if(idx!==-1) items[idx] = {...items[idx], ...data};
       showToast("<span class=tp>OK</span> 수정 완료");
     } else {
       const id = genId();
-      const entry = { id, name, cat, gid, note, img: currentImg };
+      let imgUrl = null;
+      // 이미지 파일이 있으면 Storage에 업로드
+      if(currentImgFile) {
+        setSyncStatus("syncing","UPLOADING...");
+        imgUrl = await uploadImageToStorage(currentImgFile, id);
+      }
+      const entry = { id, name, cat, gid, note, img: imgUrl };
       await sbInsert("star_items", entry);
       items.unshift(entry);
       showToast("<span class=tp>+</span> 추가 완료");
@@ -729,7 +740,7 @@ async function editItem(id, e) {
   e&&e.stopPropagation();
   const item = items.find(i=>i.id===id);
   if(!item) return;
-  editId=id; currentImg=item.img||null;
+  editId=id; currentImg=item.img||null; currentImgFile=null;
   document.getElementById("modal-title").textContent="EDIT ENTRY";
   document.getElementById("f-name").value=item.name;
   document.getElementById("f-cat").value=item.cat;
@@ -746,6 +757,8 @@ async function deleteItem(id, e) {
   setSyncStatus("syncing","DELETING...");
   try {
     await sbDelete("star_items", id);
+    // Storage 이미지도 삭제
+    await deleteImageFromStorage(id);
     items = items.filter(i=>i.id!==id);
     logs  = logs.filter(l=>l.pid!==id);
     renderCards(); setSyncStatus("ok","SYNCED"); showToast("삭제됨");
@@ -1013,7 +1026,7 @@ function populateGrpSelect(selected=""){
 }
 function openModal(isEdit=false){
   if(!isEdit){
-    editId=null;currentImg=null;
+    editId=null;currentImg=null;currentImgFile=null;
     document.getElementById("modal-title").textContent="NEW ENTRY";
     document.getElementById("f-name").value="";
     document.getElementById("f-cat").value="연예인";
@@ -1033,9 +1046,47 @@ function handleOvClick(e){if(e.target===document.getElementById("modal-overlay")
 // ═══════════════════════════════
 function applyFile(file){
   if(!file||!file.type.startsWith("image/")){showToast("이미지 파일만 가능합니다");return;}
-  const r=new FileReader();
-  r.onload=e=>{currentImg=e.target.result;const p=document.getElementById("preview-img");p.src=currentImg;p.style.display="block";showToast("<span class=tp>+</span> 이미지 추가됨");};
-  r.readAsDataURL(file);
+  currentImgFile = file; // 파일 객체 보관
+  const url = URL.createObjectURL(file);
+  const p = document.getElementById("preview-img");
+  p.src = url; p.style.display = "block";
+  showToast("<span class=tp>+</span> 이미지 추가됨");
+}
+
+async function uploadImageToStorage(file, itemId) {
+  const ext = file.name.split(".").pop() || "jpg";
+  const path = `${itemId}.${ext}`;
+  const res = await fetch(`${SB_URL}/storage/v1/object/star-photos/${path}`, {
+    method: "POST",
+    headers: {
+      "apikey": SB_KEY,
+      "Authorization": "Bearer " + SB_KEY,
+      "Content-Type": file.type,
+      "x-upsert": "true"
+    },
+    body: file
+  });
+  if(!res.ok) throw new Error(await res.text());
+  return `${SB_URL}/storage/v1/object/public/star-photos/${path}`;
+}
+
+async function deleteImageFromStorage(itemId) {
+  // itemId 기준으로 파일 삭제 (확장자 모르니 list 후 삭제)
+  try {
+    const listRes = await fetch(`${SB_URL}/storage/v1/object/list/star-photos`, {
+      method: "POST",
+      headers: { ...HEADERS },
+      body: JSON.stringify({ prefix: itemId, limit: 5 })
+    });
+    const files = await listRes.json();
+    if(files && files.length) {
+      await fetch(`${SB_URL}/storage/v1/object/star-photos`, {
+        method: "DELETE",
+        headers: { ...HEADERS },
+        body: JSON.stringify({ prefixes: files.map(f=>`${itemId}/${f.name}`) })
+      });
+    }
+  } catch(e) { /* 무시 */ }
 }
 document.getElementById("f-file").addEventListener("change",e=>applyFile(e.target.files[0]));
 const dz=document.getElementById("drop-zone");
