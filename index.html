@@ -82,9 +82,9 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(e
 .card-img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; background:var(--surface); }
 .card-img-ph { width:100%; aspect-ratio:3/4; background:linear-gradient(160deg,#0f0f0f 0%,#080808 100%); display:flex; align-items:center; justify-content:center; }
 .card-img-ph svg { width:52px; height:52px; stroke:#1e1e1e; fill:none; }
-.card-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 50%); opacity:0; transition:opacity .2s; display:flex; align-items:flex-end; padding:12px; gap:6px; }
+.card-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.9) 0%,transparent 55%); opacity:0; transition:opacity .2s; display:flex; align-items:flex-end; flex-wrap:wrap; padding:8px; gap:4px; }
 .card:hover .card-overlay { opacity:1; }
-.btn-ov { padding:6px 12px; border-radius:5px; border:none; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase; transition:all .15s; }
+.btn-ov { padding:5px 8px; border-radius:4px; border:none; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; transition:all .15s; white-space:nowrap; }
 .btn-ov:hover { transform:scale(1.05); }
 .btn-ov-log { background:var(--pink); color:#fff; }
 .btn-ov-edit { background:rgba(255,255,255,.1); color:#ccc; }
@@ -283,8 +283,8 @@ body.mobile-view .log-day-panel { max-width:100%; }
 
 
 /* LOG +/- 버튼 */
-.btn-ov-plus { background:var(--pink); color:#fff; font-size:14px; padding:5px 10px; }
-.btn-ov-minus { background:rgba(255,255,255,.1); color:#ccc; font-size:14px; padding:5px 10px; }
+.btn-ov-plus { background:var(--pink); color:#fff; font-size:13px; padding:5px 9px; }
+.btn-ov-minus { background:rgba(255,255,255,.1); color:#ccc; font-size:13px; padding:5px 9px; }
 
 /* 코멘트 모달 */
 .comment-modal-overlay {
@@ -343,6 +343,19 @@ body.mobile-view .log-day-panel { max-width:100%; }
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   max-width:180px;
 }
+
+
+/* 빠른 태그 */
+.quick-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px; }
+.quick-tag {
+  padding:4px 10px; border-radius:100px;
+  border:1px solid #242424; background:transparent;
+  color:#555; font-family:'JetBrains Mono',monospace;
+  font-size:10px; letter-spacing:.5px; cursor:pointer;
+  transition:all .15s;
+}
+.quick-tag:hover { border-color:var(--pink); color:var(--pink); }
+.quick-tag.selected { background:var(--pink); border-color:var(--pink); color:#fff; }
 
 </style>
 </head>
@@ -493,7 +506,17 @@ body.mobile-view .log-day-panel { max-width:100%; }
   <div class="comment-modal">
     <div class="comment-modal-name" id="comment-person-name"></div>
     <div class="comment-modal-sub">ADD LOG COMMENT</div>
-    <textarea class="comment-input" id="comment-input" placeholder="코멘트 입력 (선택사항)&#10;Enter로 저장"></textarea>
+    <div class="quick-tags" id="quick-tags">
+      <button class="quick-tag" onclick="toggleQuickTag(this)">😊 좋았음</button>
+      <button class="quick-tag" onclick="toggleQuickTag(this)">🔥 최고</button>
+      <button class="quick-tag" onclick="toggleQuickTag(this)">👀 발견</button>
+      <button class="quick-tag" onclick="toggleQuickTag(this)">💭 생각남</button>
+      <button class="quick-tag" onclick="toggleQuickTag(this)">📺 방송</button>
+      <button class="quick-tag" onclick="toggleQuickTag(this)">📸 화보</button>
+      <button class="quick-tag" onclick="toggleQuickTag(this)">🎵 음악</button>
+      <button class="quick-tag" onclick="toggleQuickTag(this)">🎬 영상</button>
+    </div>
+    <textarea class="comment-input" id="comment-input" placeholder="직접 입력 (선택사항)"></textarea>
     <div class="comment-modal-footer">
       <button class="btn-comment-skip" onclick="submitLog(false)">SKIP</button>
       <button class="btn-comment-save" onclick="submitLog(true)">LOG</button>
@@ -530,6 +553,20 @@ body.mobile-view .log-day-panel { max-width:100%; }
     <div class="fg"><label>NAME *</label><input type="text" id="f-name" placeholder="이름"></div>
     <div class="fg"><label>CATEGORY *</label>
       <select id="f-cat"><option value="연예인">연예인</option><option value="유명인">유명인</option><option value="BJ">BJ</option></select>
+    </div>
+    <div class="fg"><label>NATION</label>
+      <select id="f-nation">
+        <option value="">선택 안함</option>
+        <option value="🇰🇷 한국">🇰🇷 한국</option>
+        <option value="🇯🇵 일본">🇯🇵 일본</option>
+        <option value="🇨🇳 중국">🇨🇳 중국</option>
+        <option value="🇺🇸 미국">🇺🇸 미국</option>
+        <option value="🇬🇧 영국">🇬🇧 영국</option>
+        <option value="🇫🇷 프랑스">🇫🇷 프랑스</option>
+        <option value="🇹🇭 태국">🇹🇭 태국</option>
+        <option value="🇹🇼 대만">🇹🇼 대만</option>
+        <option value="기타">기타</option>
+      </select>
     </div>
     <div class="fg"><label>GROUP</label><select id="f-grp"><option value="">그룹 없음</option></select></div>
     <div class="fg"><label>MEMO</label><textarea id="f-note" placeholder="메모, 활동 등"></textarea></div>
@@ -718,6 +755,7 @@ function renderCards() {
         <div class="card-name">${esc(item.name)}</div>
         <div class="card-row">
           <span class="cat-badge ${catCls(item.cat)}">${item.cat}</span>
+          ${item.nation?`<span style="font-size:10px;color:#555">${esc(item.nation)}</span>`:""}
           ${grp?`<span class="grp-badge" style="background:${grp.color}14;color:${grp.color}">${esc(grp.name)}</span>`:""}
         </div>
         <div class="card-count">LOG <b>${cnt}</b></div>
@@ -764,9 +802,22 @@ function openCommentModal(pid, e) {
   setTimeout(()=>document.getElementById("comment-input").focus(), 80);
 }
 
+
+function toggleQuickTag(el) {
+  const isSelected = el.classList.toggle("selected");
+  const input = document.getElementById("comment-input");
+  const tag = el.textContent.trim();
+  if(isSelected) {
+    input.value = input.value ? input.value + " " + tag : tag;
+  } else {
+    input.value = input.value.replace(tag, "").trim();
+  }
+}
+
 function closeCommentModal() {
   document.getElementById("comment-overlay").classList.remove("open");
   commentPid = null;
+  document.querySelectorAll(".quick-tag").forEach(t=>t.classList.remove("selected"));
 }
 
 async function submitLog(withComment) {
@@ -829,6 +880,7 @@ async function saveItem() {
   const cat  = document.getElementById("f-cat").value;
   const gid  = document.getElementById("f-grp").value;
   const note = document.getElementById("f-note").value.trim();
+  const nation = document.getElementById("f-nation").value;
   if(!name){showToast("이름을 입력하세요");return;}
 
   setSyncStatus("syncing","UPLOADING...");
@@ -839,7 +891,7 @@ async function saveItem() {
       if(currentImgFile) {
         imgUrl = await uploadImageToStorage(currentImgFile, editId);
       }
-      const data = { name, cat, gid, note, img: imgUrl };
+      const data = { name, cat, gid, note, nation, img: imgUrl };
       await sbUpdate("star_items", editId, data);
       const idx = items.findIndex(i=>i.id===editId);
       if(idx!==-1) items[idx] = {...items[idx], ...data};
@@ -852,7 +904,7 @@ async function saveItem() {
         setSyncStatus("syncing","UPLOADING...");
         imgUrl = await uploadImageToStorage(currentImgFile, id);
       }
-      const entry = { id, name, cat, gid, note, img: imgUrl };
+      const entry = { id, name, cat, gid, note, nation, img: imgUrl };
       await sbInsert("star_items", entry);
       items.unshift(entry);
       showToast("<span class=tp>+</span> 추가 완료");
@@ -874,6 +926,7 @@ async function editItem(id, e) {
   document.getElementById("f-name").value=item.name;
   document.getElementById("f-cat").value=item.cat;
   document.getElementById("f-note").value=item.note||"";
+  document.getElementById("f-nation").value=item.nation||"";
   populateGrpSelect(item.gid);
   const p=document.getElementById("preview-img");
   if(item.img){p.src=item.img;p.style.display="block";}else{p.style.display="none";}
@@ -1161,6 +1214,7 @@ function openModal(isEdit=false){
     document.getElementById("modal-title").textContent="NEW ENTRY";
     document.getElementById("f-name").value="";
     document.getElementById("f-cat").value="연예인";
+    document.getElementById("f-nation").value="";
     document.getElementById("f-note").value="";
     document.getElementById("preview-img").style.display="none";
     document.getElementById("f-file").value="";
