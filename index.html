@@ -150,22 +150,22 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(e
 .btn-clr:hover { border-color:var(--pink); color:var(--pink); }
 .hm-grid { display:grid; grid-template-columns:38px repeat(24,1fr); gap:4px; min-width:620px; }
 .hm-corner { width:38px; }
-.hm-hour { font-family:'JetBrains Mono',monospace; font-size:8px; color:var(--muted2); text-align:center; padding-bottom:4px; }
-.hm-day-lbl { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); display:flex; align-items:center; }
+.hm-hour { font-family:'JetBrains Mono',monospace; font-size:9px; color:#555; text-align:center; padding-bottom:4px; }
+.hm-day-lbl { font-family:'JetBrains Mono',monospace; font-size:11px; color:#888; display:flex; align-items:center; font-weight:600; }
 .hm-cell { aspect-ratio:1; border-radius:3px; cursor:pointer; transition:transform .1s; }
 .hm-cell:hover { transform:scale(1.3); z-index:5; }
 .hm-cell[data-v="0"]{background:#0d0d0d} .hm-cell[data-v="1"]{background:rgba(255,31,110,.18)} .hm-cell[data-v="2"]{background:rgba(255,31,110,.38)} .hm-cell[data-v="3"]{background:rgba(255,31,110,.58)} .hm-cell[data-v="4"]{background:rgba(255,31,110,.78)} .hm-cell[data-v="5"]{background:var(--pink);box-shadow:0 0 5px var(--pink-glow)}
-.hm-peak { font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--muted); margin-top:14px; line-height:2; }
-.hm-peak b { color:var(--text); }
+.hm-peak { font-family:'JetBrains Mono',monospace; font-size:12px; color:#777; margin-top:14px; line-height:2; }
+.hm-peak b { color:#eee; }
 .hm-peak .pk { color:var(--pink); }
 .log-side-panel { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; max-height:600px; display:flex; flex-direction:column; }
-.log-side-hd { padding:13px 18px; border-bottom:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted); letter-spacing:3px; text-transform:uppercase; flex-shrink:0; }
+.log-side-hd { padding:13px 18px; border-bottom:1px solid var(--border); font-family:'JetBrains Mono',monospace; font-size:10px; color:#888; letter-spacing:3px; text-transform:uppercase; flex-shrink:0; font-weight:600; }
 .log-side-list { overflow-y:auto; flex:1; }
 .log-row { display:flex; align-items:center; gap:10px; padding:8px 16px; border-bottom:1px solid rgba(255,255,255,.022); }
 .log-row:last-child { border-bottom:none; }
-.log-time { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); flex-shrink:0; width:120px; }
-.log-pname { font-size:13px; font-weight:600; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.log-pcat { font-size:9px; color:var(--muted); font-family:'JetBrains Mono',monospace; flex-shrink:0; }
+.log-time { font-family:'JetBrains Mono',monospace; font-size:11px; color:#666; flex-shrink:0; width:50px; }
+.log-pname { font-size:13px; font-weight:700; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#ddd; }
+.log-pcat { font-size:9px; color:#555; font-family:'JetBrains Mono',monospace; flex-shrink:0; }
 .log-del-btn { background:transparent; border:none; color:var(--muted2); cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:11px; padding:2px 5px; transition:color .2s; flex-shrink:0; }
 .log-del-btn:hover { color:var(--pink); }
 
@@ -255,20 +255,21 @@ body.mobile-view .main { padding-bottom:56px; }
 /* 캘린더 */
 .cal-panel { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px 24px; }
 .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.cal-month { font-family:'Black Han Sans',sans-serif; font-size:14px; letter-spacing:2px; color:var(--text); }
-.cal-nav { background:transparent; border:1px solid var(--border2); color:var(--muted); border-radius:5px; padding:5px 12px; cursor:pointer; font-size:14px; transition:all .2s; }
+.cal-month { font-family:'Black Han Sans',sans-serif; font-size:15px; letter-spacing:2px; color:#eee; }
+.cal-nav { background:transparent; border:1px solid #2a2a2a; color:#666; border-radius:5px; padding:5px 12px; cursor:pointer; font-size:14px; transition:all .2s; }
 .cal-nav:hover { border-color:var(--pink); color:var(--pink); }
 .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-.cal-dow { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted); text-align:center; padding:4px 0 8px; letter-spacing:1px; }
-.cal-cell { min-height:52px; border-radius:6px; background:var(--surface); border:1px solid transparent; cursor:pointer; padding:5px 7px; transition:all .18s; position:relative; }
-.cal-cell:hover { border-color:rgba(255,31,110,.3); background:rgba(255,31,110,.05); }
+.cal-dow { font-family:'JetBrains Mono',monospace; font-size:10px; color:#666; text-align:center; padding:4px 0 8px; letter-spacing:1px; font-weight:600; }
+.cal-cell { min-height:56px; border-radius:6px; background:#0d0d0d; border:1px solid #1a1a1a; cursor:pointer; padding:6px 8px; transition:all .18s; position:relative; }
+.cal-cell:hover { border-color:rgba(255,31,110,.4); background:rgba(255,31,110,.06); }
 .cal-cell.selected { border-color:var(--pink); background:var(--pink-dim); }
 .cal-cell.empty { background:transparent; border:none; cursor:default; pointer-events:none; }
+.cal-cell.today { border-color:#333; }
 .cal-cell.today .cal-day { color:var(--pink); font-weight:700; }
-.cal-day { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
-.cal-dots { display:flex; flex-wrap:wrap; gap:2px; margin-top:4px; }
-.cal-dot { width:5px; height:5px; border-radius:50%; background:var(--pink); opacity:.7; }
-.cal-cnt { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--pink); margin-top:2px; }
+.cal-day { font-family:'JetBrains Mono',monospace; font-size:12px; color:#999; }
+.cal-dots { display:flex; flex-wrap:wrap; gap:2px; margin-top:5px; }
+.cal-dot { width:5px; height:5px; border-radius:50%; background:var(--pink); opacity:.8; }
+.cal-cnt { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--pink); margin-top:2px; font-weight:700; }
 
 /* 우측 로그 패널 - 새 레이아웃 */
 .heatmap-page-wrap-new { display:flex; gap:16px; }
@@ -356,6 +357,22 @@ body.mobile-view .log-day-panel { max-width:100%; }
 }
 .quick-tag:hover { border-color:var(--pink); color:var(--pink); }
 .quick-tag.selected { background:var(--pink); border-color:var(--pink); color:#fff; }
+
+
+/* TAG MANAGER */
+.tag-mgr-overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); backdrop-filter:blur(12px); z-index:300; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .2s; }
+.tag-mgr-overlay.open { opacity:1; pointer-events:all; }
+.tag-mgr-modal { background:#111; border:1px solid #242424; border-radius:14px; width:100%; max-width:440px; padding:26px; transform:translateY(12px) scale(.97); transition:transform .25s; }
+.tag-mgr-overlay.open .tag-mgr-modal { transform:translateY(0) scale(1); }
+.tag-mgr-modal h2 { font-family:'Black Han Sans',sans-serif; font-size:15px; letter-spacing:3px; color:var(--pink); margin-bottom:18px; }
+.tag-mgr-list { display:flex; flex-direction:column; gap:6px; max-height:280px; overflow-y:auto; margin-bottom:12px; }
+.tag-mgr-item { display:flex; align-items:center; gap:8px; background:#080808; border:1px solid #1a1a1a; border-radius:7px; padding:7px 10px; }
+.tag-mgr-input { flex:1; background:transparent; border:none; color:#ddd; font-family:'Noto Sans KR',sans-serif; font-size:13px; outline:none; }
+.tag-mgr-del { background:transparent; border:none; color:#333; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:12px; transition:color .2s; padding:2px 5px; }
+.tag-mgr-del:hover { color:var(--pink); }
+.btn-tag-add { width:100%; padding:8px; background:transparent; border:1px dashed #242424; border-radius:7px; color:var(--pink); font-family:'Noto Sans KR',sans-serif; font-size:13px; cursor:pointer; transition:all .2s; margin-bottom:16px; }
+.btn-tag-add:hover { border-color:var(--pink); background:var(--pink-dim); }
+.tag-mgr-footer { display:flex; gap:8px; }
 
 </style>
 </head>
@@ -501,21 +518,26 @@ body.mobile-view .log-day-panel { max-width:100%; }
   </div>
 
 
+
+<!-- TAG MANAGER MODAL -->
+<div class="tag-mgr-overlay" id="tag-mgr-overlay" onclick="handleTagMgrOvClick(event)">
+  <div class="tag-mgr-modal">
+    <h2>TAG MANAGE</h2>
+    <div class="tag-mgr-list" id="tag-mgr-list"></div>
+    <button class="btn-tag-add" onclick="addTagRow()">+ 태그 추가</button>
+    <div class="tag-mgr-footer">
+      <button class="btn-cancel" onclick="closeTagMgr()" style="flex:1;padding:9px;background:transparent;border:1px solid #1a1a1a;border-radius:7px;color:#555;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:13px">닫기</button>
+      <button class="btn-save" onclick="saveTagMgr()" style="flex:2;padding:9px;background:var(--pink);border:none;border-radius:7px;color:#fff;cursor:pointer;font-family:'Black Han Sans',sans-serif;font-size:15px;letter-spacing:1px">저장</button>
+    </div>
+  </div>
+</div>
+
 <!-- COMMENT MODAL -->
 <div class="comment-modal-overlay" id="comment-overlay">
   <div class="comment-modal">
     <div class="comment-modal-name" id="comment-person-name"></div>
-    <div class="comment-modal-sub">ADD LOG COMMENT</div>
-    <div class="quick-tags" id="quick-tags">
-      <button class="quick-tag" onclick="toggleQuickTag(this)">😊 좋았음</button>
-      <button class="quick-tag" onclick="toggleQuickTag(this)">🔥 최고</button>
-      <button class="quick-tag" onclick="toggleQuickTag(this)">👀 발견</button>
-      <button class="quick-tag" onclick="toggleQuickTag(this)">💭 생각남</button>
-      <button class="quick-tag" onclick="toggleQuickTag(this)">📺 방송</button>
-      <button class="quick-tag" onclick="toggleQuickTag(this)">📸 화보</button>
-      <button class="quick-tag" onclick="toggleQuickTag(this)">🎵 음악</button>
-      <button class="quick-tag" onclick="toggleQuickTag(this)">🎬 영상</button>
-    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px"><div class="comment-modal-sub" style="margin-bottom:0">ADD LOG COMMENT</div><button onclick="openTagMgr()" style="background:transparent;border:1px solid #242424;border-radius:5px;color:#555;font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;padding:4px 9px;cursor:pointer" onmouseover="this.style.borderColor='#ff1f6e';this.style.color='#ff1f6e'" onmouseout="this.style.borderColor='#242424';this.style.color='#555'">TAG MGR</button></div>
+    <div class="quick-tags" id="quick-tags"></div>
     <textarea class="comment-input" id="comment-input" placeholder="직접 입력 (선택사항)"></textarea>
     <div class="comment-modal-footer">
       <button class="btn-comment-skip" onclick="submitLog(false)">SKIP</button>
@@ -787,6 +809,57 @@ document.getElementById("filter-grp").addEventListener("change",renderCards);
 // ═══════════════════════════════
 //  QUICK LOG
 // ═══════════════════════════════
+
+// ═══════════════════════════════
+//  TAG MANAGER
+// ═══════════════════════════════
+const DEFAULT_TAGS = ["😊 좋았음","🔥 최고","👀 발견","💭 생각남","📺 방송","📸 화보","🎵 음악","🎬 영상"];
+let userTags = JSON.parse(localStorage.getItem("sc_tags") || JSON.stringify(DEFAULT_TAGS));
+
+function renderQuickTags() {
+  const wrap = document.getElementById("quick-tags");
+  wrap.innerHTML = userTags.map(tag=>
+    `<button class="quick-tag" onclick="toggleQuickTag(this)">${esc(tag)}</button>`
+  ).join("");
+}
+
+function openTagMgr() {
+  renderTagMgrList();
+  document.getElementById("tag-mgr-overlay").classList.add("open");
+}
+function closeTagMgr() { document.getElementById("tag-mgr-overlay").classList.remove("open"); }
+function handleTagMgrOvClick(e) { if(e.target===document.getElementById("tag-mgr-overlay")) closeTagMgr(); }
+
+function renderTagMgrList() {
+  document.getElementById("tag-mgr-list").innerHTML = userTags.map((tag,i)=>`
+    <div class="tag-mgr-item" data-idx="${i}">
+      <input class="tag-mgr-input" type="text" value="${esc(tag)}" placeholder="태그 입력">
+      <button class="tag-mgr-del" onclick="removeTagRow(${i})">x</button>
+    </div>`).join("");
+}
+
+function addTagRow() {
+  userTags.push("새 태그");
+  renderTagMgrList();
+  // 마지막 인풋 포커스
+  const inputs = document.querySelectorAll(".tag-mgr-input");
+  if(inputs.length) inputs[inputs.length-1].focus();
+}
+
+function removeTagRow(idx) {
+  userTags.splice(idx,1);
+  renderTagMgrList();
+}
+
+function saveTagMgr() {
+  const inputs = document.querySelectorAll(".tag-mgr-input");
+  userTags = [...inputs].map(i=>i.value.trim()).filter(Boolean);
+  localStorage.setItem("sc_tags", JSON.stringify(userTags));
+  closeTagMgr();
+  renderQuickTags();
+  showToast("태그 저장 완료");
+}
+
 // ═══════════════════════════════
 //  COMMENT MODAL
 // ═══════════════════════════════
@@ -798,6 +871,7 @@ function openCommentModal(pid, e) {
   const item = items.find(i=>i.id===pid);
   document.getElementById("comment-person-name").textContent = item?.name || "";
   document.getElementById("comment-input").value = "";
+  renderQuickTags();
   document.getElementById("comment-overlay").classList.add("open");
   setTimeout(()=>document.getElementById("comment-input").focus(), 80);
 }
@@ -1288,6 +1362,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape"){
     closeModal();closeGroupModal();
     if(document.getElementById("comment-overlay").classList.contains("open")) closeCommentModal();
+    if(document.getElementById("tag-mgr-overlay").classList.contains("open")) closeTagMgr();
   }
   if(e.key==="Enter"&&document.getElementById("modal-overlay").classList.contains("open")&&document.activeElement.tagName!=="TEXTAREA") saveItem();
   if(e.key==="Enter"&&document.getElementById("comment-overlay").classList.contains("open")&&e.ctrlKey) submitLog(true);
