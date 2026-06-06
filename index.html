@@ -815,11 +815,11 @@ function renderCards() {
         <div class="card-name">${esc(item.name)}</div>
         <div class="card-row">
           <span class="cat-badge ${catCls(item.cat)}">${item.cat}</span>
-          ${item.nation?`<span style="font-size:10px;color:#555">${esc(item.nation)}</span>`:""}
+          ${item.nation?`<span class="nation-badge">${esc(item.nation)}</span>`:""}
           ${grp?`<span class="grp-badge" style="background:${grp.color}14;color:${grp.color}">${esc(grp.name)}</span>`:""}
         </div>
+        ${item.note?`<div class="card-row" style="margin-top:4px"><span class="card-note-badge">${esc(item.note)}</span></div>`:""}
         <div class="card-count">LOG <b>${cnt}</b></div>
-        ${item.note?`<div class="card-note">${esc(item.note)}</div>`:""}
         <div class="card-log-list" id="cll-${item.id}"></div>
       </div>
     </div>`;
