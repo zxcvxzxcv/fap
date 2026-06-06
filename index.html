@@ -281,6 +281,69 @@ body.mobile-view .main { padding-bottom:56px; }
 body.mobile-view #page-heatmap.active { grid-template-columns:1fr; }
 body.mobile-view .log-day-panel { max-width:100%; }
 
+
+/* LOG +/- 버튼 */
+.btn-ov-plus { background:var(--pink); color:#fff; font-size:14px; padding:5px 10px; }
+.btn-ov-minus { background:rgba(255,255,255,.1); color:#ccc; font-size:14px; padding:5px 10px; }
+
+/* 코멘트 모달 */
+.comment-modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.7); backdrop-filter:blur(8px);
+  z-index:500; display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.comment-modal-overlay.open { opacity:1; pointer-events:all; }
+.comment-modal {
+  background:#111; border:1px solid #242424; border-radius:14px;
+  width:100%; max-width:380px; padding:24px;
+  transform:translateY(10px) scale(.97); transition:transform .22s;
+}
+.comment-modal-overlay.open .comment-modal { transform:translateY(0) scale(1); }
+.comment-modal-name {
+  font-family:'Black Han Sans',sans-serif; font-size:16px;
+  color:var(--pink); margin-bottom:4px; letter-spacing:1px;
+}
+.comment-modal-sub {
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  color:var(--muted); letter-spacing:2px; margin-bottom:16px;
+}
+.comment-input {
+  width:100%; background:#080808; border:1px solid #242424;
+  border-radius:8px; padding:10px 13px; color:var(--text);
+  font-family:'Noto Sans KR',sans-serif; font-size:13px;
+  outline:none; resize:none; min-height:80px;
+  transition:border-color .2s;
+}
+.comment-input:focus { border-color:var(--pink); }
+.comment-input::placeholder { color:#333; }
+.comment-modal-footer { display:flex; gap:8px; margin-top:14px; }
+.btn-comment-skip {
+  flex:1; padding:9px; background:transparent; border:1px solid #242424;
+  border-radius:7px; color:var(--muted); cursor:pointer;
+  font-family:'JetBrains Mono',monospace; font-size:11px;
+  letter-spacing:1px; transition:all .2s;
+}
+.btn-comment-skip:hover { color:var(--text); border-color:#333; }
+.btn-comment-save {
+  flex:2; padding:9px; background:var(--pink); border:none;
+  border-radius:7px; color:#fff; cursor:pointer;
+  font-family:'Black Han Sans',sans-serif; font-size:14px;
+  letter-spacing:1px; transition:all .2s;
+}
+.btn-comment-save:hover { background:var(--pink2); box-shadow:0 0 14px var(--pink-glow); }
+
+/* 카드 로그 엔트리에 코멘트 표시 */
+.card-log-comment {
+  font-size:10px; color:#555; flex:1;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-style:italic;
+}
+.log-comment-txt {
+  font-size:10px; color:#555; font-style:italic;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  max-width:180px;
+}
+
 </style>
 </head>
 <body>
@@ -423,6 +486,20 @@ body.mobile-view .log-day-panel { max-width:100%; }
       <div class="log-side-list" id="log-list"></div>
     </div>
   </div>
+
+
+<!-- COMMENT MODAL -->
+<div class="comment-modal-overlay" id="comment-overlay">
+  <div class="comment-modal">
+    <div class="comment-modal-name" id="comment-person-name"></div>
+    <div class="comment-modal-sub">ADD LOG COMMENT</div>
+    <textarea class="comment-input" id="comment-input" placeholder="코멘트 입력 (선택사항)&#10;Enter로 저장"></textarea>
+    <div class="comment-modal-footer">
+      <button class="btn-comment-skip" onclick="submitLog(false)">SKIP</button>
+      <button class="btn-comment-save" onclick="submitLog(true)">LOG</button>
+    </div>
+  </div>
+</div>
 
 <!-- MOBILE BOTTOM NAV -->
 <nav class="mobile-nav">
@@ -630,7 +707,8 @@ function renderCards() {
       <div class="card-img-wrap">
         ${item.img?`<img class="card-img" src="${item.img}" alt="${esc(item.name)}">`:`<div class="card-img-ph">${PSV}</div>`}
         <div class="card-overlay">
-          <button class="btn-ov btn-ov-log" onclick="quickLog('${item.id}',event)">+ LOG</button>
+          <button class="btn-ov btn-ov-plus" onclick="openCommentModal('${item.id}',event)" title="로그 추가">+</button>
+          <button class="btn-ov btn-ov-minus" onclick="undoLog('${item.id}',event)" title="최근 로그 취소">−</button>
           <button class="btn-ov btn-ov-logs" onclick="toggleCardLogs('${item.id}',event)">LOGS</button>
           <button class="btn-ov btn-ov-edit" onclick="editItem('${item.id}',event)">EDIT</button>
           <button class="btn-ov btn-ov-del" onclick="deleteItem('${item.id}',event)">DEL</button>
@@ -671,15 +749,43 @@ document.getElementById("filter-grp").addEventListener("change",renderCards);
 // ═══════════════════════════════
 //  QUICK LOG
 // ═══════════════════════════════
-async function quickLog(pid, e) {
-  e&&e.stopPropagation();
+// ═══════════════════════════════
+//  COMMENT MODAL
+// ═══════════════════════════════
+let commentPid = null;
+
+function openCommentModal(pid, e) {
+  e && e.stopPropagation();
+  commentPid = pid;
+  const item = items.find(i=>i.id===pid);
+  document.getElementById("comment-person-name").textContent = item?.name || "";
+  document.getElementById("comment-input").value = "";
+  document.getElementById("comment-overlay").classList.add("open");
+  setTimeout(()=>document.getElementById("comment-input").focus(), 80);
+}
+
+function closeCommentModal() {
+  document.getElementById("comment-overlay").classList.remove("open");
+  commentPid = null;
+}
+
+async function submitLog(withComment) {
+  const pid = commentPid;
+  if(!pid) return;
+  const comment = withComment ? document.getElementById("comment-input").value.trim() : "";
+  closeCommentModal();
+  await quickLog(pid, null, comment);
+}
+
+async function quickLog(pid, e, comment="") {
+  e && e.stopPropagation();
   const id = genId();
   const ts = new Date().toISOString();
-  const entry = { id, pid, ts };
+  const entry = { id, pid, ts, comment: comment||null };
   logs.unshift(entry);
   renderCards();
   const item = items.find(i=>i.id===pid);
-  showToast(`<span class="tp">+</span> ${item?.name||""} 기록`);
+  showToast(`<span class="tp">+</span> ${item?.name||""} 기록${comment?" · "+comment.slice(0,12)+(comment.length>12?"...":""):""}`);
   setSyncStatus("syncing","SAVING...");
   try {
     await sbInsert("star_logs", entry);
@@ -689,6 +795,29 @@ async function quickLog(pid, e) {
     renderCards();
     setSyncStatus("err","ERROR");
     showToast("저장 실패: "+err.message);
+  }
+}
+
+// 최근 로그 1개 취소
+async function undoLog(pid, e) {
+  e && e.stopPropagation();
+  const pidLogs = logs.filter(l=>l.pid===pid).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  if(!pidLogs.length){ showToast("취소할 로그 없음"); return; }
+  const last = pidLogs[0];
+  if(!confirm("가장 최근 로그를 삭제하시겠습니까?")) return;
+  setSyncStatus("syncing","DELETING...");
+  try {
+    await sbDelete("star_logs", last.id);
+    logs = logs.filter(l=>l.id!==last.id);
+    renderCards();
+    if(document.getElementById("page-heatmap").classList.contains("active")){
+      renderAllHeatmap(); renderCalendar(); renderLogList(selectedDate);
+    }
+    setSyncStatus("ok","SYNCED");
+    showToast("로그 취소됨");
+  } catch(err) {
+    setSyncStatus("err","ERROR");
+    showToast("삭제 실패: "+err.message);
   }
 }
 
@@ -951,9 +1080,11 @@ function renderLogList(dateKey) {
     const item = items.find(i=>i.id===log.pid);
     const d = new Date(log.ts);
     const ds = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const cmtSpan = log.comment ? `<span class="log-comment-txt" title="${esc(log.comment)}">${esc(log.comment)}</span>` : "";
     return `<div class="log-row">
       <span class="log-time">${ds}</span>
       <span class="log-pname">${esc(item?.name||"?")}</span>
+      ${cmtSpan}
       <span class="log-pcat">${item?.cat||""}</span>
       <button class="log-del-btn" onclick="deleteLog('${log.id}','${dateKey||""}')">x</button>
     </div>`;
@@ -1100,8 +1231,16 @@ document.addEventListener("paste",e=>{
 
 // KEYBOARD
 document.addEventListener("keydown",e=>{
-  if(e.key==="Escape"){closeModal();closeGroupModal();}
+  if(e.key==="Escape"){
+    closeModal();closeGroupModal();
+    if(document.getElementById("comment-overlay").classList.contains("open")) closeCommentModal();
+  }
   if(e.key==="Enter"&&document.getElementById("modal-overlay").classList.contains("open")&&document.activeElement.tagName!=="TEXTAREA") saveItem();
+  if(e.key==="Enter"&&document.getElementById("comment-overlay").classList.contains("open")&&e.ctrlKey) submitLog(true);
+});
+// 코멘트 오버레이 배경 클릭 닫기
+document.getElementById("comment-overlay").addEventListener("click",e=>{
+  if(e.target===document.getElementById("comment-overlay")) closeCommentModal();
 });
 
 // TOAST
@@ -1190,8 +1329,10 @@ function renderCardLogList(pid) {
   el.innerHTML = pLogs.map(log=>{
     const d = new Date(log.ts);
     const ds = `${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    const cmtHtml = log.comment ? `<span class="card-log-comment">${esc(log.comment)}</span>` : "";
     return `<div class="card-log-entry">
       <span class="card-log-time">${ds}</span>
+      ${cmtHtml}
       <button class="card-log-del" onclick="deleteLogFromCard('${log.id}','${pid}',event)">x</button>
     </div>`;
   }).join("");
