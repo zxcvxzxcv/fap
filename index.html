@@ -1187,7 +1187,7 @@ function applyFile(file){
 async function uploadImageToStorage(file, itemId) {
   const ext = file.name.split(".").pop() || "jpg";
   const path = `${itemId}.${ext}`;
-  const res = await fetch(`${SB_URL}/storage/v1/object/star-photos/${path}`, {
+  const res = await fetch(`${SB_URL}/storage/v1/object/OWN/${path}`, {
     method: "POST",
     headers: {
       "apikey": SB_KEY,
@@ -1198,20 +1198,20 @@ async function uploadImageToStorage(file, itemId) {
     body: file
   });
   if(!res.ok) throw new Error(await res.text());
-  return `${SB_URL}/storage/v1/object/public/star-photos/${path}`;
+  return `${SB_URL}/storage/v1/object/public/OWN/${path}`;
 }
 
 async function deleteImageFromStorage(itemId) {
   // itemId 기준으로 파일 삭제 (확장자 모르니 list 후 삭제)
   try {
-    const listRes = await fetch(`${SB_URL}/storage/v1/object/list/star-photos`, {
+    const listRes = await fetch(`${SB_URL}/storage/v1/object/list/OWN`, {
       method: "POST",
       headers: { ...HEADERS },
       body: JSON.stringify({ prefix: itemId, limit: 5 })
     });
     const files = await listRes.json();
     if(files && files.length) {
-      await fetch(`${SB_URL}/storage/v1/object/star-photos`, {
+      await fetch(`${SB_URL}/storage/v1/object/OWN`, {
         method: "DELETE",
         headers: { ...HEADERS },
         body: JSON.stringify({ prefixes: files.map(f=>`${itemId}/${f.name}`) })
