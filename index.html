@@ -207,9 +207,59 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(e
 ::-webkit-scrollbar { width:4px; height:4px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:#1e1e1e; border-radius:2px; }
+
+/* MOBILE VIEW */
+body.mobile-view { font-size:14px; }
+body.mobile-view .sidebar { display:none; }
+body.mobile-view .main { margin-left:0; }
+body.mobile-view .grid { grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px; }
+body.mobile-view .page { padding:16px 14px 60px; }
+body.mobile-view .topbar { padding:0 14px; gap:8px; }
+body.mobile-view .topbar-title { display:none; }
+body.mobile-view .search-wrap { max-width:100%; }
+body.mobile-view .topbar-filters { display:none !important; }
+body.mobile-view .ranking-page-wrap { grid-template-columns:1fr; }
+body.mobile-view .rank-cat-grid { grid-template-columns:1fr; }
+body.mobile-view .heatmap-page-wrap { grid-template-columns:1fr; }
+body.mobile-view .hm-panel { padding:14px 10px; }
+
+/* MOBILE BOTTOM NAV */
+.mobile-nav { display:none; position:fixed; bottom:0; left:0; right:0; background:rgba(0,0,0,.96); border-top:1px solid #1a1a1a; z-index:100; height:56px; align-items:center; justify-content:space-around; }
+body.mobile-view .mobile-nav { display:flex; }
+body.mobile-view .main { padding-bottom:56px; }
+.mob-nav-btn { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; background:transparent; border:none; color:#444; cursor:pointer; font-family:'JetBrains Mono',monospace; font-size:8px; letter-spacing:1px; text-transform:uppercase; transition:color .2s; height:100%; }
+.mob-nav-btn.active { color:#ff1f6e; }
+.mob-nav-btn svg { width:18px; height:18px; }
+
+/* LOG DELETE in card overlay */
+.card-log-list { max-height:0; overflow:hidden; transition:max-height .3s; background:var(--surface); }
+.card-log-list.open { max-height:200px; overflow-y:auto; }
+.card-log-entry { display:flex; align-items:center; gap:8px; padding:5px 10px; border-bottom:1px solid rgba(255,255,255,.04); font-size:10px; }
+.card-log-entry:last-child { border-bottom:none; }
+.card-log-time { font-family:'JetBrains Mono',monospace; color:#444; flex:1; font-size:9px; }
+.card-log-del { background:transparent; border:none; color:#2a2a2a; cursor:pointer; font-size:11px; font-family:'JetBrains Mono',monospace; transition:color .2s; padding:1px 4px; }
+.card-log-del:hover { color:#ff1f6e; }
+.btn-ov-logs { background:rgba(255,255,255,.08); color:#aaa; }
+
 </style>
 </head>
 <body>
+
+<!-- PASSWORD SCREEN -->
+<div id="pw-screen" style="position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px">
+  <div style="font-family:'Black Han Sans',sans-serif;font-size:20px;letter-spacing:6px;color:#ff1f6e">STAR COLLECTION</div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#444;letter-spacing:3px">ENTER PASSWORD</div>
+  <div style="position:relative">
+    <input id="pw-input" type="password" maxlength="10" placeholder="••••"
+      style="background:#0d0d0d;border:1px solid #242424;border-radius:8px;padding:12px 18px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:20px;letter-spacing:6px;outline:none;width:180px;text-align:center"
+      onkeydown="if(event.key==='Enter')checkPw()">
+  </div>
+  <button onclick="checkPw()"
+    style="padding:10px 32px;background:#ff1f6e;color:#fff;border:none;border-radius:7px;font-family:'Black Han Sans',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer">
+    UNLOCK
+  </button>
+  <div id="pw-err" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#ff1f6e;letter-spacing:2px;opacity:0;transition:opacity .2s">WRONG PASSWORD</div>
+</div>
 
 <aside class="sidebar">
   <div class="sidebar-logo">
@@ -241,6 +291,7 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(e
   <div class="sidebar-bottom">
     <button class="btn-add-main" onclick="openModal()">+ ADD</button>
     <button class="btn-group-mgr" onclick="openGroupModal()">GROUP MANAGE</button>
+    <button class="btn-group-mgr" id="view-toggle-btn" onclick="toggleView()" style="margin-top:2px">MOBILE VIEW</button>
   </div>
 </aside>
 
@@ -310,6 +361,27 @@ body::before { content:''; position:fixed; inset:0; background:radial-gradient(e
       </div>
     </div>
   </div>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav">
+  <button class="mob-nav-btn active" data-page="cards">
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    CARDS
+  </button>
+  <button class="mob-nav-btn" data-page="ranking">
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+    RANK
+  </button>
+  <button class="mob-nav-btn" data-page="heatmap">
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg>
+    LOG
+  </button>
+  <button class="mob-nav-btn" onclick="openModal()" style="color:#ff1f6e">
+    <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+    ADD
+  </button>
+</nav>
+
 </main>
 
 <!-- ADD/EDIT MODAL -->
@@ -497,6 +569,7 @@ function renderCards() {
         ${item.img?`<img class="card-img" src="${item.img}" alt="${esc(item.name)}">`:`<div class="card-img-ph">${PSV}</div>`}
         <div class="card-overlay">
           <button class="btn-ov btn-ov-log" onclick="quickLog('${item.id}',event)">+ LOG</button>
+          <button class="btn-ov btn-ov-logs" onclick="toggleCardLogs('${item.id}',event)">LOGS</button>
           <button class="btn-ov btn-ov-edit" onclick="editItem('${item.id}',event)">EDIT</button>
           <button class="btn-ov btn-ov-del" onclick="deleteItem('${item.id}',event)">DEL</button>
         </div>
@@ -509,6 +582,7 @@ function renderCards() {
         </div>
         <div class="card-count">LOG <b>${cnt}</b></div>
         ${item.note?`<div class="card-note">${esc(item.note)}</div>`:""}
+        <div class="card-log-list" id="cll-${item.id}"></div>
       </div>
     </div>`;
   }).join("");
@@ -868,6 +942,103 @@ function showToast(msg){
   t.innerHTML=msg;t.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>t.classList.remove("show"),2400);
+}
+
+
+// ═══════════════════════════════
+//  PASSWORD
+// ═══════════════════════════════
+const PW = "1234";
+function checkPw() {
+  const v = document.getElementById("pw-input").value;
+  if(v === PW) {
+    const s = document.getElementById("pw-screen");
+    s.style.opacity="0"; s.style.transition="opacity .4s";
+    setTimeout(()=>s.style.display="none", 400);
+    sessionStorage.setItem("sc_auth","1");
+  } else {
+    const err = document.getElementById("pw-err");
+    err.style.opacity="1";
+    document.getElementById("pw-input").value="";
+    document.getElementById("pw-input").style.borderColor="#ff1f6e";
+    setTimeout(()=>{ err.style.opacity="0"; document.getElementById("pw-input").style.borderColor="#242424"; }, 1800);
+  }
+}
+// auto-unlock if already authed this session
+if(sessionStorage.getItem("sc_auth")==="1") {
+  document.getElementById("pw-screen").style.display="none";
+}
+document.getElementById("pw-input").addEventListener("focus", e => { e.target.style.borderColor="#ff1f6e"; });
+
+// ═══════════════════════════════
+//  MOBILE / PC TOGGLE
+// ═══════════════════════════════
+function toggleView() {
+  const isMobile = document.body.classList.toggle("mobile-view");
+  document.getElementById("view-toggle-btn").textContent = isMobile ? "PC VIEW" : "MOBILE VIEW";
+  localStorage.setItem("sc_view", isMobile ? "mobile" : "pc");
+}
+if(localStorage.getItem("sc_view")==="mobile") {
+  document.body.classList.add("mobile-view");
+  const btn = document.getElementById("view-toggle-btn");
+  if(btn) btn.textContent = "PC VIEW";
+}
+
+// Mobile bottom nav
+document.querySelectorAll(".mob-nav-btn[data-page]").forEach(t=>{
+  t.addEventListener("click",()=>{
+    document.querySelectorAll(".mob-nav-btn").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".nav-item").forEach(x=>x.classList.remove("active"));
+    document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+    t.classList.add("active");
+    const pg = t.dataset.page;
+    document.getElementById("page-"+pg).classList.add("active");
+    document.getElementById("tb-title").innerHTML = TB_TITLES[pg];
+    document.querySelector(".search-wrap").style.display = pg==="cards"?"":"none";
+    document.querySelector(".topbar-filters").style.display = pg==="cards"?"":"none";
+    if(pg==="ranking") renderRanking();
+    if(pg==="heatmap") renderHeatmapPage();
+  });
+});
+
+
+// ═══════════════════════════════
+//  CARD LOG LIST TOGGLE
+// ═══════════════════════════════
+function toggleCardLogs(pid, e) {
+  e && e.stopPropagation();
+  const el = document.getElementById("cll-"+pid);
+  if(!el) return;
+  const isOpen = el.classList.toggle("open");
+  if(isOpen) renderCardLogList(pid);
+}
+
+function renderCardLogList(pid) {
+  const el = document.getElementById("cll-"+pid);
+  if(!el) return;
+  const pLogs = [...logs].filter(l=>l.pid===pid).sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,15);
+  if(!pLogs.length) { el.innerHTML=`<div style="padding:8px 12px;font-size:10px;color:#2a2a2a;font-family:'JetBrains Mono',monospace">NO LOGS</div>`; return; }
+  el.innerHTML = pLogs.map(log=>{
+    const d = new Date(log.ts);
+    const ds = `${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `<div class="card-log-entry">
+      <span class="card-log-time">${ds}</span>
+      <button class="card-log-del" onclick="deleteLogFromCard('${log.id}','${pid}',event)">x</button>
+    </div>`;
+  }).join("");
+}
+
+async function deleteLogFromCard(id, pid, e) {
+  e && e.stopPropagation();
+  setSyncStatus("syncing","DELETING...");
+  try {
+    await sbDelete("star_logs", id);
+    logs = logs.filter(l=>l.id!==id);
+    renderCardLogList(pid);
+    renderCards();
+    setSyncStatus("ok","SYNCED");
+    showToast("로그 삭제됨");
+  } catch(err) { setSyncStatus("err","ERROR"); showToast("삭제 실패: "+err.message); }
 }
 
 // INIT
