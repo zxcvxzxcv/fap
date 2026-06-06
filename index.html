@@ -423,6 +423,20 @@ body.mobile-view .log-day-panel { max-width:100%; }
   text-overflow:ellipsis;
 }
 
+
+.nation-picker { display:flex; gap:6px; flex-wrap:wrap; }
+.nation-pick-btn {
+  padding:5px 12px; border-radius:100px;
+  border:1px solid #242424; background:transparent;
+  color:#888; font-family:'JetBrains Mono',monospace;
+  font-size:11px; cursor:pointer; transition:all .18s;
+  letter-spacing:.5px;
+}
+.nation-pick-btn:hover { border-color:var(--pink); color:var(--pink); }
+.nation-pick-btn.active { background:var(--pink); border-color:var(--pink); color:#fff; }
+.nation-custom-btn { color:var(--pink); border-color:rgba(255,31,110,.3); }
+.nation-custom-btn:hover { background:var(--pink-dim); }
+
 </style>
 </head>
 <body>
@@ -490,6 +504,7 @@ body.mobile-view .log-day-panel { max-width:100%; }
         <option value="유명인">유명인</option>
         <option value="BJ">BJ</option>
       </select>
+      <select class="tb-select" id="filter-nation"><option value="">ALL NATION</option></select>
       <select class="tb-select" id="filter-grp"><option value="">ALL GROUP</option></select>
     </div>
     <button id="view-toggle-btn" onclick="toggleView()"
@@ -626,7 +641,13 @@ body.mobile-view .log-day-panel { max-width:100%; }
       <select id="f-cat"><option value="연예인">연예인</option><option value="유명인">유명인</option><option value="BJ">BJ</option></select>
     </div>
     <div class="fg"><label>NATION</label>
-      <input type="text" id="f-nation" placeholder="예) 🇰🇷 한국, 🇯🇵 일본, 🇺🇸 미국">
+      <div class="nation-picker" id="nation-picker">
+        <button type="button" class="nation-pick-btn" onclick="pickNation('🇰🇷 한국')">🇰🇷 한국</button>
+        <button type="button" class="nation-pick-btn" onclick="pickNation('🇯🇵 일본')">🇯🇵 일본</button>
+        <button type="button" class="nation-pick-btn" onclick="pickNation('🇨🇳 중국')">🇨🇳 중국</button>
+        <button type="button" class="nation-pick-btn nation-custom-btn" onclick="toggleCustomNation()">+ 직접입력</button>
+      </div>
+      <input type="text" id="f-nation" placeholder="직접 입력" style="display:none;margin-top:6px">
     </div>
     <div class="fg"><label>GROUP</label><select id="f-grp"><option value="">그룹 없음</option></select></div>
     <div class="fg"><label>MEMO</label><textarea id="f-note" placeholder="메모, 활동 등"></textarea></div>
@@ -780,9 +801,18 @@ function renderCards() {
   fg.innerHTML = "<option value=''>ALL GROUP</option>" +
     groups.map(g=>`<option value="${g.id}" ${fgVal===g.id?"selected":""}>${esc(g.name)}</option>`).join("");
 
+  // 국적 필터 옵션 동적 업데이트
+  const fn = document.getElementById("filter-nation");
+  const fnVal = fn.value;
+  const nations = [...new Set(items.map(i=>i.nation).filter(Boolean))].sort();
+  fn.innerHTML = "<option value=''>ALL NATION</option>" +
+    nations.map(n=>`<option value="${esc(n)}" ${fnVal===n?"selected":""}>${esc(n)}</option>`).join("");
+
   let list = [...items].sort((a,b)=>getCount(b.id)-getCount(a.id));
   if(currentCat!=="전체") list=list.filter(i=>i.cat===currentCat);
   if(fCat) list=list.filter(i=>i.cat===fCat);
+  const fNation = fn.value;
+  if(fNation) list=list.filter(i=>i.nation===fNation);
   const fGrp = fg.value;
   if(fGrp) list=list.filter(i=>i.gid===fGrp);
   if(q) list=list.filter(i=>
@@ -842,11 +872,57 @@ document.querySelectorAll(".cat-btn").forEach(t=>{
 });
 document.getElementById("search-input").addEventListener("input",renderCards);
 document.getElementById("filter-cat").addEventListener("change",renderCards);
+document.getElementById("filter-nation").addEventListener("change",renderCards);
 document.getElementById("filter-grp").addEventListener("change",renderCards);
 
 // ═══════════════════════════════
 //  QUICK LOG
 // ═══════════════════════════════
+
+
+// ═══════════════════════════════
+//  NATION PICKER
+// ═══════════════════════════════
+function pickNation(val) {
+  document.getElementById("f-nation").value = val;
+  document.querySelectorAll(".nation-pick-btn:not(.nation-custom-btn)").forEach(b=>{
+    b.classList.toggle("active", b.textContent.trim()===val);
+  });
+  // 직접입력 숨기기
+  document.getElementById("f-nation").style.display = "none";
+}
+
+function toggleCustomNation() {
+  const inp = document.getElementById("f-nation");
+  const isHidden = inp.style.display === "none";
+  inp.style.display = isHidden ? "block" : "none";
+  if(isHidden) {
+    // 기본 선택 해제
+    document.querySelectorAll(".nation-pick-btn:not(.nation-custom-btn)").forEach(b=>b.classList.remove("active"));
+    inp.value = "";
+    inp.focus();
+  }
+}
+
+function initNationPicker(val) {
+  const presets = ["🇰🇷 한국","🇯🇵 일본","🇨🇳 중국"];
+  const inp = document.getElementById("f-nation");
+  document.querySelectorAll(".nation-pick-btn:not(.nation-custom-btn)").forEach(b=>b.classList.remove("active"));
+  if(!val) {
+    inp.style.display = "none";
+    inp.value = "";
+  } else if(presets.includes(val)) {
+    inp.style.display = "none";
+    inp.value = val;
+    document.querySelectorAll(".nation-pick-btn:not(.nation-custom-btn)").forEach(b=>{
+      if(b.textContent.trim()===val) b.classList.add("active");
+    });
+  } else {
+    // 직접입력값
+    inp.style.display = "block";
+    inp.value = val;
+  }
+}
 
 // ═══════════════════════════════
 //  TAG MANAGER
@@ -1038,7 +1114,7 @@ async function editItem(id, e) {
   document.getElementById("f-name").value=item.name;
   document.getElementById("f-cat").value=item.cat;
   document.getElementById("f-note").value=item.note||"";
-  document.getElementById("f-nation").value=item.nation||"";
+  initNationPicker(item.nation||"");
   populateGrpSelect(item.gid);
   const p=document.getElementById("preview-img");
   if(item.img){p.src=item.img;p.style.display="block";}else{p.style.display="none";}
@@ -1326,7 +1402,7 @@ function openModal(isEdit=false){
     document.getElementById("modal-title").textContent="NEW ENTRY";
     document.getElementById("f-name").value="";
     document.getElementById("f-cat").value="연예인";
-    document.getElementById("f-nation").value="";
+    initNationPicker("");
     document.getElementById("f-note").value="";
     document.getElementById("preview-img").style.display="none";
     document.getElementById("f-file").value="";
