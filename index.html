@@ -390,6 +390,18 @@ body.mobile-view .log-day-panel { max-width:100%; }
 .btn-tag-add:hover { border-color:var(--pink); background:var(--pink-dim); }
 .tag-mgr-footer { display:flex; gap:8px; }
 
+
+.nation-badge {
+  font-size:10px;
+  color:#bbb;
+  font-family:'JetBrains Mono',monospace;
+  letter-spacing:.3px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:3px;
+  padding:1px 6px;
+}
+
 </style>
 </head>
 <body>
@@ -593,18 +605,7 @@ body.mobile-view .log-day-panel { max-width:100%; }
       <select id="f-cat"><option value="연예인">연예인</option><option value="유명인">유명인</option><option value="BJ">BJ</option></select>
     </div>
     <div class="fg"><label>NATION</label>
-      <select id="f-nation">
-        <option value="">선택 안함</option>
-        <option value="🇰🇷 한국">🇰🇷 한국</option>
-        <option value="🇯🇵 일본">🇯🇵 일본</option>
-        <option value="🇨🇳 중국">🇨🇳 중국</option>
-        <option value="🇺🇸 미국">🇺🇸 미국</option>
-        <option value="🇬🇧 영국">🇬🇧 영국</option>
-        <option value="🇫🇷 프랑스">🇫🇷 프랑스</option>
-        <option value="🇹🇭 태국">🇹🇭 태국</option>
-        <option value="🇹🇼 대만">🇹🇼 대만</option>
-        <option value="기타">기타</option>
-      </select>
+      <input type="text" id="f-nation" placeholder="예) 🇰🇷 한국, 🇯🇵 일본, 🇺🇸 미국">
     </div>
     <div class="fg"><label>GROUP</label><select id="f-grp"><option value="">그룹 없음</option></select></div>
     <div class="fg"><label>MEMO</label><textarea id="f-note" placeholder="메모, 활동 등"></textarea></div>
