@@ -241,6 +241,46 @@ body.mobile-view .main { padding-bottom:56px; }
 .card-log-del:hover { color:#ff1f6e; }
 .btn-ov-logs { background:rgba(255,255,255,.08); color:#aaa; }
 
+
+/* LOG CAL PAGE */
+.log-cal-wrap { display:flex; flex-direction:column; gap:16px; }
+.hm-legend { display:flex; align-items:center; gap:3px; }
+.hm-legend-cell { display:inline-block; width:12px; height:12px; border-radius:2px; }
+.hm-legend-cell[data-v="0"]{background:#0d0d0d}
+.hm-legend-cell[data-v="2"]{background:rgba(255,31,110,.38)}
+.hm-legend-cell[data-v="3"]{background:rgba(255,31,110,.58)}
+.hm-legend-cell[data-v="4"]{background:rgba(255,31,110,.78)}
+.hm-legend-cell[data-v="5"]{background:#ff1f6e}
+
+/* 캘린더 */
+.cal-panel { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:20px 24px; }
+.cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.cal-month { font-family:'Black Han Sans',sans-serif; font-size:14px; letter-spacing:2px; color:var(--text); }
+.cal-nav { background:transparent; border:1px solid var(--border2); color:var(--muted); border-radius:5px; padding:5px 12px; cursor:pointer; font-size:14px; transition:all .2s; }
+.cal-nav:hover { border-color:var(--pink); color:var(--pink); }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.cal-dow { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--muted); text-align:center; padding:4px 0 8px; letter-spacing:1px; }
+.cal-cell { min-height:52px; border-radius:6px; background:var(--surface); border:1px solid transparent; cursor:pointer; padding:5px 7px; transition:all .18s; position:relative; }
+.cal-cell:hover { border-color:rgba(255,31,110,.3); background:rgba(255,31,110,.05); }
+.cal-cell.selected { border-color:var(--pink); background:var(--pink-dim); }
+.cal-cell.empty { background:transparent; border:none; cursor:default; pointer-events:none; }
+.cal-cell.today .cal-day { color:var(--pink); font-weight:700; }
+.cal-day { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+.cal-dots { display:flex; flex-wrap:wrap; gap:2px; margin-top:4px; }
+.cal-dot { width:5px; height:5px; border-radius:50%; background:var(--pink); opacity:.7; }
+.cal-cnt { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--pink); margin-top:2px; }
+
+/* 우측 로그 패널 - 새 레이아웃 */
+.heatmap-page-wrap-new { display:flex; gap:16px; }
+.heatmap-page-wrap-new .left { flex:1; display:flex; flex-direction:column; gap:16px; }
+.log-day-panel { background:var(--card); border:1px solid var(--border); border-radius:10px; overflow:hidden; min-width:300px; max-width:320px; max-height:340px; display:flex; flex-direction:column; }
+
+/* page-heatmap 레이아웃 */
+#page-heatmap { display:none; }
+#page-heatmap.active { display:grid; grid-template-columns:1fr 320px; gap:16px; align-items:start; }
+body.mobile-view #page-heatmap.active { grid-template-columns:1fr; }
+body.mobile-view .log-day-panel { max-width:100%; }
+
 </style>
 </head>
 <body>
@@ -291,7 +331,6 @@ body.mobile-view .main { padding-bottom:56px; }
   <div class="sidebar-bottom">
     <button class="btn-add-main" onclick="openModal()">+ ADD</button>
     <button class="btn-group-mgr" onclick="openGroupModal()">GROUP MANAGE</button>
-    <button class="btn-group-mgr" id="view-toggle-btn" onclick="toggleView()" style="margin-top:2px">MOBILE VIEW</button>
   </div>
 </aside>
 
@@ -311,6 +350,11 @@ body.mobile-view .main { padding-bottom:56px; }
       </select>
       <select class="tb-select" id="filter-grp"><option value="">ALL GROUP</option></select>
     </div>
+    <button id="view-toggle-btn" onclick="toggleView()"
+      style="padding:6px 14px;background:transparent;border:1px solid #242424;border-radius:6px;color:#444;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0"
+      onmouseover="this.style.borderColor='#ff1f6e';this.style.color='#ff1f6e'"
+      onmouseout="this.style.borderColor='#242424';this.style.color='#444'"
+    >MOBILE VIEW</button>
   </div>
 
   <div class="page active" id="page-cards">
@@ -344,21 +388,39 @@ body.mobile-view .main { padding-bottom:56px; }
   </div>
 
   <div class="page" id="page-heatmap">
-    <div class="heatmap-page-wrap">
+    <div class="log-cal-wrap">
+      <!-- 상단: 주간 히트맵 (전체 로그, 클릭 불가) -->
       <div class="hm-panel">
         <div class="hm-top">
-          <div class="hm-title" id="hm-name-title">WHEN THEY LOG</div>
-          <select class="hm-sel" id="hm-person-select"></select>
-          <button class="btn-lognow" onclick="logNow()">LOG NOW</button>
-          <button class="btn-clr" onclick="clearPersonLogs()">CLEAR</button>
+          <div class="hm-title">WHEN THEY LOG &mdash; <b>ALL</b></div>
+          <div class="hm-legend">
+            <span class="hm-legend-cell" data-v="0"></span>
+            <span class="hm-legend-cell" data-v="2"></span>
+            <span class="hm-legend-cell" data-v="3"></span>
+            <span class="hm-legend-cell" data-v="4"></span>
+            <span class="hm-legend-cell" data-v="5"></span>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#444;margin-left:4px">LESS → MORE</span>
+          </div>
         </div>
         <div class="hm-grid" id="hm-grid"></div>
         <div class="hm-peak" id="hm-peak"></div>
       </div>
-      <div class="log-side-panel">
-        <div class="log-side-hd">RECENT LOG</div>
-        <div class="log-side-list" id="log-list"></div>
+
+      <!-- 하단: 날짜별 캘린더 로그 뷰 -->
+      <div class="cal-panel">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="calPrev()">&#8592;</button>
+          <span class="cal-month" id="cal-month-lbl"></span>
+          <button class="cal-nav" onclick="calNext()">&#8594;</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
       </div>
+    </div>
+
+    <!-- 우측: 선택된 날 상세 로그 -->
+    <div class="log-day-panel" id="log-day-panel">
+      <div class="log-side-hd" id="log-day-title">SELECT A DATE</div>
+      <div class="log-side-list" id="log-list"></div>
     </div>
   </div>
 
@@ -747,99 +809,155 @@ function renderRanking() {
 // ═══════════════════════════════
 //  HEATMAP
 // ═══════════════════════════════
+// ═══════════════════════════════
+//  HEATMAP (전체 로그)
+// ═══════════════════════════════
 function renderHeatmapPage() {
-  const sel=document.getElementById("hm-person-select");
-  const cur=sel.value;
-  sel.innerHTML="<option value=''>— SELECT —</option>"+
-    items.map(i=>`<option value="${i.id}" ${cur===i.id?"selected":""}>${esc(i.name)}</option>`).join("");
-  renderHeatmap(sel.value); renderLogList();
+  renderAllHeatmap();
+  renderCalendar();
+  renderLogList(null); // 기본: 아무 날도 선택 안된 상태
 }
-document.getElementById("hm-person-select").addEventListener("change",e=>{renderHeatmap(e.target.value);renderLogList();});
 
-function renderHeatmap(pid) {
-  const grid=document.getElementById("hm-grid"),peak=document.getElementById("hm-peak"),title=document.getElementById("hm-name-title");
-  if(!pid){title.innerHTML="WHEN THEY LOG";grid.innerHTML="";peak.innerHTML="";return;}
-  const item=items.find(i=>i.id===pid);
-  title.innerHTML=`WHEN THEY LOG &mdash; <b>${esc(item?.name||"")}</b>`;
-  const pl=logs.filter(l=>l.pid===pid);
-  const count=Array.from({length:7},()=>new Array(24).fill(0));
-  pl.forEach(l=>{const d=new Date(l.ts);let day=d.getDay();day=day===0?6:day-1;count[day][d.getHours()]++;});
+function renderAllHeatmap() {
+  const grid = document.getElementById("hm-grid");
+  const peak = document.getElementById("hm-peak");
+  // 전체 로그 집계 (요일×시간)
+  const count = Array.from({length:7}, () => new Array(24).fill(0));
+  logs.forEach(l => {
+    const d = new Date(l.ts);
+    let day = d.getDay(); day = day===0?6:day-1;
+    count[day][d.getHours()]++;
+  });
   let pv=0,pd=0,ph=0;
   count.forEach((row,d)=>row.forEach((v,h)=>{if(v>pv){pv=v;pd=d;ph=h;}}));
-  const total=pl.length;
-  let html="<div class='hm-corner'></div>";
-  for(let h=0;h<24;h++) html+=h%3===0?`<div class="hm-hour">${pad(h)}h</div>`:"<div class='hm-hour'></div>";
+  const total = logs.length;
+
+  let html = "<div class='hm-corner'></div>";
+  for(let h=0;h<24;h++) html += h%3===0?`<div class="hm-hour">${pad(h)}h</div>`:"<div class='hm-hour'></div>";
   DAYS.forEach((day,d)=>{
-    html+=`<div class="hm-day-lbl">${day}</div>`;
-    for(let h=0;h<24;h++){const v=Math.min(count[d][h],5);html+=`<div class="hm-cell" data-v="${v}" title="${DAYS_KR[d]}요일 ${h}시: ${count[d][h]}회" onclick="logAtTime('${pid}',${d},${h})"></div>`;}
+    html += `<div class="hm-day-lbl">${day}</div>`;
+    for(let h=0;h<24;h++){
+      const v = Math.min(count[d][h], 5);
+      // 클릭 기능 없음 - 단순 표시만
+      html += `<div class="hm-cell" data-v="${v}" title="${DAYS_KR[d]}요일 ${h}시: ${count[d][h]}회" style="cursor:default"></div>`;
+    }
   });
-  grid.innerHTML=html;
-  peak.innerHTML=total>0
-    ?`Peak: <b>${DAYS_KR[pd]}요일 ${pad(ph)}h</b> <span class="pk">(${pv} &middot; ${Math.round(pv/total*100)}%)</span> &nbsp;&nbsp;&nbsp; <b>${total}</b> total`
-    :`<span style="color:var(--muted2)">로그 없음 &mdash; LOG NOW 또는 셀 클릭으로 기록</span>`;
+  grid.innerHTML = html;
+
+  if(total>0) {
+    const pct = Math.round(pv/total*100);
+    peak.innerHTML = `Peak: <b>${DAYS_KR[pd]}요일 ${pad(ph)}h</b> <span class="pk">(${pv} &middot; ${pct}%)</span> &nbsp;&nbsp;&nbsp; <b>${total}</b> total`;
+  } else {
+    peak.innerHTML = `<span style="color:var(--muted2)">아직 로그가 없습니다</span>`;
+  }
 }
 
-async function logNow() {
-  const pid=document.getElementById("hm-person-select").value;
-  if(!pid){showToast("인물을 선택하세요");return;}
-  const id=genId(); const ts=new Date().toISOString();
-  const entry={id,pid,ts};
-  logs.unshift(entry);
-  renderCards(); renderHeatmap(pid); renderLogList();
-  const item=items.find(i=>i.id===pid);
-  showToast(`<span class="tp">+</span> ${item?.name||""} 기록`);
-  setSyncStatus("syncing","SAVING...");
-  try { await sbInsert("star_logs",entry); setSyncStatus("ok","SYNCED"); }
-  catch(err) { logs=logs.filter(l=>l.id!==id); renderCards(); renderHeatmap(pid); renderLogList(); setSyncStatus("err","ERROR"); showToast("저장 실패: "+err.message); }
+// ═══════════════════════════════
+//  CALENDAR
+// ═══════════════════════════════
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-based
+let selectedDate = null; // "YYYY-MM-DD"
+
+function calPrev() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+function calNext() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCalendar(); }
+
+function renderCalendar() {
+  const lbl = document.getElementById("cal-month-lbl");
+  lbl.textContent = `${calYear}.${pad(calMonth+1)}`;
+
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+
+  // 해당 월 로그를 날짜별로 집계
+  const dayCounts = {};
+  logs.forEach(l => {
+    const d = new Date(l.ts);
+    if(d.getFullYear()===calYear && d.getMonth()===calMonth) {
+      const key = `${calYear}-${pad(calMonth+1)}-${pad(d.getDate())}`;
+      dayCounts[key] = (dayCounts[key]||0) + 1;
+    }
+  });
+
+  const DOWS = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+  let html = DOWS.map(d=>`<div class="cal-dow">${d}</div>`).join("");
+
+  // 빈 칸 (월 시작 전)
+  for(let i=0;i<firstDay;i++) html += `<div class="cal-cell empty"></div>`;
+
+  for(let d=1;d<=daysInMonth;d++){
+    const dateKey = `${calYear}-${pad(calMonth+1)}-${pad(d)}`;
+    const cnt = dayCounts[dateKey]||0;
+    const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+    const isSel = selectedDate===dateKey;
+    const dots = Math.min(cnt, 8);
+    const dotsHtml = dots>0 ? `<div class="cal-dots">${Array(dots).fill('<span class="cal-dot"></span>').join("")}</div><div class="cal-cnt">${cnt}</div>` : "";
+    html += `<div class="cal-cell${isToday?" today":""}${isSel?" selected":""}" onclick="selectCalDate('${dateKey}')">
+      <div class="cal-day">${d}</div>
+      ${dotsHtml}
+    </div>`;
+  }
+
+  document.getElementById("cal-grid").innerHTML = html;
 }
 
-async function logAtTime(pid, dayIdx, hour) {
-  const now=new Date(); const nd=now.getDay()===0?6:now.getDay()-1;
-  const ts=new Date(now); ts.setDate(ts.getDate()+(dayIdx-nd)); ts.setHours(hour,0,0,0);
-  const id=genId(); const entry={id,pid,ts:ts.toISOString()};
-  logs.unshift(entry);
-  renderHeatmap(pid); renderLogList(); renderCards();
-  showToast(`<span class="tp">+</span> ${DAYS_KR[dayIdx]} ${hour}시 기록`);
-  setSyncStatus("syncing","SAVING...");
-  try { await sbInsert("star_logs",entry); setSyncStatus("ok","SYNCED"); }
-  catch(err) { logs=logs.filter(l=>l.id!==id); renderHeatmap(pid); renderLogList(); renderCards(); setSyncStatus("err","ERROR"); showToast("저장 실패: "+err.message); }
+function selectCalDate(dateKey) {
+  selectedDate = dateKey;
+  renderCalendar();
+  renderLogList(dateKey);
+  // 제목 업데이트
+  document.getElementById("log-day-title").textContent = dateKey;
 }
 
-async function clearPersonLogs() {
-  const pid=document.getElementById("hm-person-select").value;
-  if(!pid){showToast("인물을 선택하세요");return;}
-  if(!confirm("이 인물의 모든 로그를 삭제하시겠습니까?")) return;
-  setSyncStatus("syncing","DELETING...");
-  try {
-    await sbDeleteWhere("star_logs","pid",pid);
-    logs=logs.filter(l=>l.pid!==pid);
-    renderHeatmap(pid); renderLogList(); renderCards();
-    setSyncStatus("ok","SYNCED"); showToast("로그 초기화 완료");
-  } catch(err) { setSyncStatus("err","ERROR"); showToast("삭제 실패: "+err.message); }
-}
+// ═══════════════════════════════
+//  LOG LIST (날짜별)
+// ═══════════════════════════════
+function renderLogList(dateKey) {
+  const ll = document.getElementById("log-list");
+  const title = document.getElementById("log-day-title");
 
-function renderLogList() {
-  const pid=document.getElementById("hm-person-select").value;
-  const ll=document.getElementById("log-list");
-  let list=pid?logs.filter(l=>l.pid===pid):logs;
-  list=[...list].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,50);
-  if(!list.length){ll.innerHTML=`<div class="no-data" style="padding:16px">NO LOGS</div>`;return;}
-  ll.innerHTML=list.map(log=>{
-    const item=items.find(i=>i.id===log.pid);
-    const d=new Date(log.ts);
-    const ds=`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    return`<div class="log-row"><span class="log-time">${ds}</span><span class="log-pname">${esc(item?.name||"?")}</span><span class="log-pcat">${item?.cat||""}</span><button class="log-del-btn" onclick="deleteLog('${log.id}')">x</button></div>`;
+  let list;
+  if(!dateKey) {
+    // 날짜 미선택: 최근 로그 전체
+    list = [...logs].sort((a,b)=>new Date(b.ts)-new Date(a.ts)).slice(0,30);
+    title.textContent = "RECENT LOG";
+  } else {
+    list = logs.filter(l=>{
+      const d = new Date(l.ts);
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` === dateKey;
+    }).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+    title.textContent = dateKey + " (" + list.length + ")";
+  }
+
+  if(!list.length){
+    ll.innerHTML=`<div class="no-data" style="padding:16px">NO LOGS</div>`;
+    return;
+  }
+  ll.innerHTML = list.map(log=>{
+    const item = items.find(i=>i.id===log.pid);
+    const d = new Date(log.ts);
+    const ds = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    return `<div class="log-row">
+      <span class="log-time">${ds}</span>
+      <span class="log-pname">${esc(item?.name||"?")}</span>
+      <span class="log-pcat">${item?.cat||""}</span>
+      <button class="log-del-btn" onclick="deleteLog('${log.id}','${dateKey||""}')">x</button>
+    </div>`;
   }).join("");
 }
 
-async function deleteLog(id) {
+async function deleteLog(id, dateKey) {
   setSyncStatus("syncing","DELETING...");
   try {
-    await sbDelete("star_logs",id);
-    logs=logs.filter(l=>l.id!==id);
-    const pid=document.getElementById("hm-person-select").value;
-    renderHeatmap(pid); renderLogList(); renderCards();
+    await sbDelete("star_logs", id);
+    logs = logs.filter(l=>l.id!==id);
+    renderAllHeatmap();
+    renderCalendar();
+    renderLogList(dateKey||null);
+    renderCards();
     setSyncStatus("ok","SYNCED");
+    showToast("로그 삭제됨");
   } catch(err) { setSyncStatus("err","ERROR"); showToast("삭제 실패: "+err.message); }
 }
 
